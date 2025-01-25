@@ -1,0 +1,60 @@
+name: Terraform Apply
+
+on:
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ vars.GOOGLE_CLOUD_PROJECT_ID }}
+  REGISTRY_DOMAIN: ${{ vars.GOOGLE_CLOUD_REGION }}-docker.pkg.dev
+  SERVICE_NAME: ${{ vars.GOOGLE_CLOUD_SERVICE_NAME }}
+
+jobs:
+  terraform_apply:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Authenticate to google cloud
+        id: authorization-google-cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GOOGLE_CLOUD_WORKLOAD_IDENTITY_PROVIDER_ID }}
+          service_account: ${{ vars.GOOGLE_CLOUD_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.REGISTRY_DOMAIN }}
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY_DOMAIN }}/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}/frontend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+            latest
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: setup terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "1.10.3"
+
+      - name: terraform apply
+        run: |
+          terraform init
+          terraform apply -auto-approve
+        working-directory: terraform/service
