@@ -2,6 +2,11 @@ name: Terraform Apply
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "frontend/**"
 
 env:
   PROJECT_ID: ${{ vars.GOOGLE_CLOUD_PROJECT_ID }}
