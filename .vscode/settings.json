@@ -15,7 +15,9 @@
   "editor.formatOnSave": true,
   "cSpell.words": [
     "artifactregistry",
+    "autoincrement",
     "cloudresourcemanager",
+    "cloudsql",
     "devcamp",
     "iamcredentials",
     "kanorix",

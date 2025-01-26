@@ -25,6 +25,13 @@ resource "google_cloud_run_domain_mapping" "frontend" {
   }
 }
 
+module "cloudsql" {
+  source       = "./modules/cloudsql"
+  project_id   = var.project_id
+  region       = var.region
+  service_name = var.service_name
+}
+
 # Google Cloud Runサービスのリソース
 resource "google_cloud_run_v2_service" "frontend" {
   # サービス名
@@ -55,6 +62,24 @@ resource "google_cloud_run_v2_service" "frontend" {
           name  = env.key
           value = env.value
         }
+      }
+
+      env {
+        name  = "DATABASE_URL"
+        value = "postgresql://${module.cloudsql.user}:${module.cloudsql.password}@localhost:5432/${module.cloudsql.name}?host=${module.cloudsql.socket}"
+      }
+
+      # Cloud SQLのマウント
+      volume_mounts {
+        name       = "cloudsql"
+        mount_path = "/cloudsql"
+      }
+    }
+
+    volumes {
+      name = "cloudsql"
+      cloud_sql_instance {
+        instances = [module.cloudsql.connection_name]
       }
     }
 
