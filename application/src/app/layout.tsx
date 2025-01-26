@@ -1,9 +1,9 @@
-import "@mantine/core/styles.css";
 import {
   ColorSchemeScript,
   mantineHtmlProps,
   MantineProvider,
 } from "@mantine/core";
+import "@mantine/core/styles.css";
 
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
@@ -22,6 +22,11 @@ export default function RootLayout({
   return (
     <html lang="ja" {...mantineHtmlProps}>
       <head>
+        {/* iOSでフォーカスしたときに拡大されないようにする */}
+        <meta
+          name="viewport"
+          content="width=device-width,initial-scale=1.0,maximum-scale=1.0"
+        />
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>
       <body className={GeistSans.className}>

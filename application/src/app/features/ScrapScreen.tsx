@@ -37,7 +37,7 @@ const ScrapScreen = () => {
   }, [isRefetching]);
 
   return (
-    <Flex direction="column" h="calc(100vh - 64px)">
+    <Flex direction="column" h="calc(100dvh - 64px)">
       {/* 入力フォーム */}
       <Box style={{ flexGrow: 1, overflowY: "auto" }} p="md" ref={scrollRef}>
         <ScrapList scraps={scraps ?? []} />
