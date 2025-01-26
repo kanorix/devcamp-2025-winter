@@ -9,6 +9,7 @@ import { ScrapList } from "./ScrapList";
 const ScrapScreen = () => {
   const {
     data: scraps,
+    isLoading,
     isRefetching,
     refetch,
   } = api.scrap.findAll.useQuery({ limit: 10 });
@@ -31,13 +32,13 @@ const ScrapScreen = () => {
 
   // データが更新されたらスクロール
   useEffect(() => {
-    if (!isRefetching) {
+    if (!isRefetching && !isLoading) {
       scrollToBottom();
     }
-  }, [isRefetching]);
+  }, [isRefetching, isLoading]);
 
   return (
-    <Flex direction="column" h="calc(100dvh - 64px)">
+    <Flex direction="column" h="100dvh" style={{ paddingBottom: "16px" }}>
       {/* 入力フォーム */}
       <Box style={{ flexGrow: 1, overflowY: "auto" }} p="md" ref={scrollRef}>
         <ScrapList scraps={scraps ?? []} />

@@ -6,7 +6,7 @@ import ScrapScreen from "../features/ScrapScreen";
 export default async function Home() {
   return (
     <HydrateClient>
-      <Container size="sm" py="xl">
+      <Container size="sm">
         <ScrapScreen />
       </Container>
     </HydrateClient>
