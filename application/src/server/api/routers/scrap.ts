@@ -1,18 +1,22 @@
 import { z } from "zod";
 
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const scrapRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
+  findAll: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().optional(),
+        offset: z.number().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      return ctx.db.scrap.findMany({
+        orderBy: { createdAt: "desc" },
+        where: { createdBy: { id: ctx.session.user.id } },
+        take: input.limit,
+        skip: input.offset,
+      });
     }),
 
   create: protectedProcedure
@@ -25,15 +29,6 @@ export const scrapRouter = createTRPCRouter({
         },
       });
     }),
-
-  getLatest: protectedProcedure.query(async ({ ctx }) => {
-    const scrap = await ctx.db.scrap.findFirst({
-      orderBy: { createdAt: "desc" },
-      where: { createdBy: { id: ctx.session.user.id } },
-    });
-
-    return scrap ?? null;
-  }),
 
   getSecretMessage: protectedProcedure.query(() => {
     return "you can now see this secret message!";

@@ -1,8 +1,5 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
-
-import { db } from "~/server/db";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -31,6 +28,7 @@ declare module "next-auth" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authConfig = {
+  secret: process.env.AUTH_SECRET,
   providers: [
     DiscordProvider,
     /**
@@ -45,14 +43,25 @@ export const authConfig = {
   ],
   // Dockerコンテナ内の場合に必要な設定
   trustHost: true,
-  adapter: PrismaAdapter(db),
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+    async session({ session, token }) {
+      session.user.id = token.sub ?? "";
+      console.log(token);
+      return session;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.sub = user.id;
+      }
+      return token;
+    },
+    authorized: async ({ auth }) => {
+      // Logged in users are authenticated, otherwise redirect to login page
+      return !!auth;
+    },
+  },
+  session: {
+    strategy: "jwt",
+    maxAge: 3 * 60 * 60,
   },
 } satisfies NextAuthConfig;

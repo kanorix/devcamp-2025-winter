@@ -1,14 +1,13 @@
-import { Container, Text } from "@mantine/core";
-import Link from "next/link";
+import { Container } from "@mantine/core";
 
 import { HydrateClient } from "~/trpc/server";
+import ScrapScreen from "../features/ScrapScreen";
 
 export default async function Home() {
   return (
     <HydrateClient>
       <Container size="sm" py="xl">
-        <Text>Hello World</Text>
-        <Link href="/api/auth/signin">ログイン</Link>
+        <ScrapScreen />
       </Container>
     </HydrateClient>
   );
