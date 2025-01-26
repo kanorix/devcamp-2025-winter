@@ -7,21 +7,34 @@ resource "google_service_account" "cloud_run_service_account" {
   display_name = "Cloud Run Service Account"
 }
 
-data "google_artifact_registry_docker_image" "frontend" {
+# secret読み取り権限の付与
+resource "google_project_iam_member" "cloud_run_service_account_iam_secret_manager" {
+  project = var.project_id
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:${google_service_account.cloud_run_service_account.email}"
+}
+
+resource "google_project_iam_member" "cloud_run_service_account_iam_cloudsql" {
+  project = var.project_id
+  role    = "roles/cloudsql.client"
+  member  = "serviceAccount:${google_service_account.cloud_run_service_account.email}"
+}
+
+data "google_artifact_registry_docker_image" "application" {
   location      = var.region
   project       = var.project_id
   repository_id = var.service_name
-  image_name    = "frontend:latest"
+  image_name    = "application:latest"
 }
 
-resource "google_cloud_run_domain_mapping" "frontend" {
+resource "google_cloud_run_domain_mapping" "application" {
   name     = "${var.service_name}.rkano.dev"
-  location = google_cloud_run_v2_service.frontend.location
+  location = google_cloud_run_v2_service.application.location
   metadata {
     namespace = var.project_id
   }
   spec {
-    route_name = google_cloud_run_v2_service.frontend.name
+    route_name = google_cloud_run_v2_service.application.name
   }
 }
 
@@ -33,7 +46,7 @@ module "cloudsql" {
 }
 
 # Google Cloud Runサービスのリソース
-resource "google_cloud_run_v2_service" "frontend" {
+resource "google_cloud_run_v2_service" "application" {
   # サービス名
   name = var.service_name
 
@@ -41,12 +54,11 @@ resource "google_cloud_run_v2_service" "frontend" {
   location = var.region
 
   ingress = "INGRESS_TRAFFIC_ALL"
-
   template {
+    service_account = google_service_account.cloud_run_service_account.email
 
     containers {
-      # image = "${var.region}-docker.pkg.dev/${var.project_id}/${var.service_name}/frontend:latest"
-      image = data.google_artifact_registry_docker_image.frontend.self_link
+      image = data.google_artifact_registry_docker_image.application.self_link
 
       resources {
         limits = {
@@ -67,6 +79,40 @@ resource "google_cloud_run_v2_service" "frontend" {
       env {
         name  = "DATABASE_URL"
         value = "postgresql://${module.cloudsql.user}:${module.cloudsql.password}@localhost:5432/${module.cloudsql.name}?host=${module.cloudsql.socket}"
+      }
+
+      env {
+        name = "AUTH_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = "AUTH_SECRET"
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name  = "NEXTAUTH_URL"
+        value = "https://${var.service_name}.rkano.dev"
+      }
+      env {
+        name = "AUTH_DISCORD_ID"
+        value_source {
+          secret_key_ref {
+            secret  = "AUTH_DISCORD_ID"
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "AUTH_DISCORD_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = "AUTH_DISCORD_SECRET"
+            version = "latest"
+          }
+        }
       }
 
       # Cloud SQLのマウント
@@ -102,9 +148,21 @@ data "google_iam_policy" "no_auth" {
 
 # ポリシーをCloud Runに適用
 resource "google_cloud_run_service_iam_policy" "no_auth" {
-  location = google_cloud_run_v2_service.frontend.location
-  project  = google_cloud_run_v2_service.frontend.project
-  service  = google_cloud_run_v2_service.frontend.name
+  location = google_cloud_run_v2_service.application.location
+  project  = google_cloud_run_v2_service.application.project
+  service  = google_cloud_run_v2_service.application.name
 
   policy_data = data.google_iam_policy.no_auth.policy_data
+}
+
+data "google_secret_manager_secret_version" "auth_secret" {
+  secret = "AUTH_SECRET"
+}
+
+data "google_secret_manager_secret_version" "auth_discord_id" {
+  secret = "AUTH_DISCORD_ID"
+}
+
+data "google_secret_manager_secret_version" "auth_discord_secret" {
+  secret = "AUTH_DISCORD_SECRET"
 }

@@ -6,14 +6,12 @@ resource "google_project_service" "cloud_resource_manager" {
 
 resource "google_iam_workload_identity_pool" "github_actions" {
   workload_identity_pool_id = "github-actions2"
-  # project                   = var.project_id
 }
 
 resource "google_iam_workload_identity_pool_provider" "github_actions" {
   workload_identity_pool_provider_id = "github-actions"
 
   workload_identity_pool_id = google_iam_workload_identity_pool.github_actions.workload_identity_pool_id
-  # project                   = var.project_id
 
   attribute_condition = format("assertion.repository == \"%s/%s\"", var.github_username, var.github_repository)
   attribute_mapping = {
@@ -37,10 +35,10 @@ resource "google_service_account_iam_member" "github_actions" {
 }
 
 resource "google_project_iam_member" "github_actions" {
-  project = var.project_id
-
-  role   = "roles/editor"
-  member = google_service_account.github_actions.member
+  project  = var.project_id
+  for_each = toset(["roles/editor", "roles/secretmanager.secretAccessor"])
+  role     = each.value
+  member   = google_service_account.github_actions.member
 }
 
 locals {

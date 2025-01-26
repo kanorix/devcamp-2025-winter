@@ -18,6 +18,7 @@
     "autoincrement",
     "cloudresourcemanager",
     "cloudsql",
+    "cuid",
     "devcamp",
     "iamcredentials",
     "kanorix",
