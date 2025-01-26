@@ -37,6 +37,17 @@ data "google_artifact_registry_docker_image" "frontend" {
   image_name    = "frontend:latest"
 }
 
+resource "google_cloud_run_domain_mapping" "frontend" {
+  name     = "${var.service_name}.rkano.dev"
+  location = google_cloud_run_v2_service.frontend.location
+  metadata {
+    namespace = var.project_id
+  }
+  spec {
+    route_name = google_cloud_run_v2_service.frontend.name
+  }
+}
+
 # Google Cloud Runサービスのリソース
 resource "google_cloud_run_v2_service" "frontend" {
   # サービス名
