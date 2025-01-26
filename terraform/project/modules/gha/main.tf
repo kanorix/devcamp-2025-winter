@@ -1,19 +1,19 @@
 
 resource "google_project_service" "cloud_resource_manager" {
-  project = var.project_id
-  service = "cloudresourcemanager.googleapis.com"
+  service            = "cloudresourcemanager.googleapis.com"
+  disable_on_destroy = false
 }
 
 resource "google_iam_workload_identity_pool" "github_actions" {
   workload_identity_pool_id = "github-actions2"
-  project                   = var.project_id
+  # project                   = var.project_id
 }
 
 resource "google_iam_workload_identity_pool_provider" "github_actions" {
   workload_identity_pool_provider_id = "github-actions"
 
   workload_identity_pool_id = google_iam_workload_identity_pool.github_actions.workload_identity_pool_id
-  project                   = var.project_id
+  # project                   = var.project_id
 
   attribute_condition = format("assertion.repository == \"%s/%s\"", var.github_username, var.github_repository)
   attribute_mapping = {
