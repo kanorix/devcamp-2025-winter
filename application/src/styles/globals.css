@@ -16,6 +16,7 @@ body {
     sans-serif;
   height: 100vh;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
 }
 
 a {
