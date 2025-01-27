@@ -1,9 +1,14 @@
 "use client";
 
-import { ActionIcon, Flex, Paper, Textarea } from "@mantine/core";
+import { ActionIcon, Flex, Paper } from "@mantine/core";
 import { IconSend } from "@tabler/icons-react";
 import { useState } from "react";
 import { api } from "~/trpc/react";
+
+import { RichTextEditor } from "@mantine/tiptap";
+import Link from "@tiptap/extension-link";
+import { useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 
 type Props = {
   refetch: () => Promise<void>;
@@ -22,7 +27,6 @@ export const ScrapInput = ({ refetch }: Props) => {
     setContent("");
     setIsLoading(false);
   };
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // MacのCommand+Enter または WindowsのCtrl+Enter
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
@@ -31,10 +35,18 @@ export const ScrapInput = ({ refetch }: Props) => {
     }
   };
 
+  const editor = useEditor({
+    extensions: [StarterKit, Link],
+    content: "",
+    onUpdate: ({ editor }) => {
+      setContent(JSON.stringify(editor?.getJSON() ?? {}));
+    },
+  });
+
   return (
     <Paper shadow="xs" p="md">
       <Flex gap="sm" align="end">
-        <Textarea
+        {/* <Textarea
           style={{ flexGrow: 1 }}
           placeholder="なんでも書き留めてください... (⌘ + Enter で送信)"
           autosize
@@ -42,7 +54,31 @@ export const ScrapInput = ({ refetch }: Props) => {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={handleKeyDown}
-        />
+        /> */}
+        <RichTextEditor
+          editor={editor}
+          variant="subtle"
+          style={{ flexGrow: 1 }}
+        >
+          <RichTextEditor.Toolbar sticky stickyOffset={60}>
+            <RichTextEditor.ControlsGroup>
+              <RichTextEditor.Bold />
+              <RichTextEditor.Italic />
+              <RichTextEditor.Underline />
+              <RichTextEditor.Strikethrough />
+              {/* <RichTextEditor.ClearFormatting /> */}
+              {/* <RichTextEditor.Highlight />
+              <RichTextEditor.Code /> */}
+            </RichTextEditor.ControlsGroup>
+            <RichTextEditor.ControlsGroup>
+              <RichTextEditor.Link />
+              <RichTextEditor.BulletList />
+              <RichTextEditor.OrderedList />
+            </RichTextEditor.ControlsGroup>
+          </RichTextEditor.Toolbar>
+          <RichTextEditor.Content content={content} />
+        </RichTextEditor>
+
         <ActionIcon
           size="md"
           onClick={handleCreateScrap}
