@@ -67,7 +67,7 @@ const Scrap = ({
         overlayProps={{ radius: "sm", blur: 2 }}
       />
       <TypographyStylesProvider>
-        <Box dangerouslySetInnerHTML={{ __html: output }} />
+        <Box dangerouslySetInnerHTML={{ __html: output }} mih={50} />
       </TypographyStylesProvider>
 
       <Group justify="space-between" mt="xs">
@@ -98,7 +98,14 @@ const Scrap = ({
 
 export const ScrapList = ({ scraps, refetch }: Props) => {
   return (
-    <Flex gap="md" direction="column-reverse">
+    <Flex
+      gap="md"
+      direction="column-reverse"
+      style={{
+        overscrollBehavior: "none",
+        WebkitOverflowScrolling: "touch",
+      }}
+    >
       {scraps.map((scrap) => (
         <Scrap key={scrap.id} scrap={scrap} refetch={refetch} />
       ))}
