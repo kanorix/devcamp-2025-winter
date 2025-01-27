@@ -13,9 +13,13 @@ export const scrapRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return ctx.db.scrap.findMany({
         orderBy: { createdAt: "desc" },
-        where: { createdBy: { id: ctx.session.user.id } },
         take: input.limit,
         skip: input.offset,
+        include: {
+          createdBy: {
+            select: { name: true },
+          },
+        },
       });
     }),
 
@@ -27,6 +31,14 @@ export const scrapRouter = createTRPCRouter({
           content: input.content,
           createdBy: { connect: { id: ctx.session.user.id } },
         },
+      });
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.string().cuid() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.scrap.delete({
+        where: { id: input.id, createdBy: { id: ctx.session.user.id } },
       });
     }),
 

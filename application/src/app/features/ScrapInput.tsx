@@ -19,12 +19,24 @@ export const ScrapInput = ({ refetch }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const createScrap = api.scrap.create.useMutation();
 
+  const editor = useEditor({
+    extensions: [StarterKit, Link],
+    content: "",
+    onUpdate: ({ editor }) => {
+      setContent(JSON.stringify(editor?.getJSON() ?? {}));
+    },
+  });
+
   const handleCreateScrap = async () => {
     if (content.trim() === "") return;
     setIsLoading(true);
     await createScrap.mutateAsync({ content });
     await refetch();
+
+    // TODO: editorとstateの2重管理になってしまっている
+    editor?.commands.setContent("");
     setContent("");
+
     setIsLoading(false);
   };
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -34,14 +46,6 @@ export const ScrapInput = ({ refetch }: Props) => {
       void handleCreateScrap();
     }
   };
-
-  const editor = useEditor({
-    extensions: [StarterKit, Link],
-    content: "",
-    onUpdate: ({ editor }) => {
-      setContent(JSON.stringify(editor?.getJSON() ?? {}));
-    },
-  });
 
   return (
     <Paper shadow="xs" p="md">

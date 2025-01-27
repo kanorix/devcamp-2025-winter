@@ -8,6 +8,7 @@ import "@mantine/tiptap/styles.css";
 
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
+import { SessionProvider } from "next-auth/react";
 
 import { TRPCReactProvider } from "~/trpc/react";
 
@@ -32,7 +33,9 @@ export default function RootLayout({
       </head>
       <body className={GeistSans.className}>
         <MantineProvider defaultColorScheme="dark">
-          <TRPCReactProvider>{children}</TRPCReactProvider>
+          <SessionProvider>
+            <TRPCReactProvider>{children}</TRPCReactProvider>
+          </SessionProvider>
         </MantineProvider>
       </body>
     </html>

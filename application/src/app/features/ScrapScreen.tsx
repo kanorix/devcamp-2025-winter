@@ -41,7 +41,7 @@ const ScrapScreen = () => {
     <Flex direction="column" h="100dvh" style={{ paddingBottom: "16px" }}>
       {/* 入力フォーム */}
       <Box style={{ flexGrow: 1, overflowY: "auto" }} p="md" ref={scrollRef}>
-        <ScrapList scraps={scraps ?? []} />
+        <ScrapList scraps={scraps ?? []} refetch={handleRefetch} />
       </Box>
 
       {/* スクラップ一覧 */}
