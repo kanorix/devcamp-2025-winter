@@ -5,8 +5,9 @@ on:
   push:
     branches:
       - main
+      - develop
     paths:
-      - "frontend/**"
+      - "application/**"
 
 env:
   PROJECT_ID: ${{ vars.GOOGLE_CLOUD_PROJECT_ID }}
@@ -38,7 +39,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ env.REGISTRY_DOMAIN }}/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}/frontend
+            ${{ env.REGISTRY_DOMAIN }}/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}/application
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -48,7 +49,7 @@ jobs:
       - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
-          context: ./frontend
+          context: ./application
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

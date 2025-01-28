@@ -12,12 +12,20 @@
   "[jsonc]": {
     "editor.tabSize": 2
   },
+  "cssVariables.lookupFiles": [
+    "**/*.css",
+    "**/*.scss",
+    "**/*.sass",
+    "**/*.less",
+    "node_modules/@mantine/core/styles.css"
+  ],
   "editor.formatOnSave": true,
   "cSpell.words": [
     "artifactregistry",
     "autoincrement",
     "cloudresourcemanager",
     "cloudsql",
+    "cuid",
     "devcamp",
     "iamcredentials",
     "kanorix",
